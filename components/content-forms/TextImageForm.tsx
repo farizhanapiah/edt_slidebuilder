@@ -2,7 +2,8 @@
 
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import type { TextImageContent } from "@/types/slide";
+import { ImageAdjuster } from "@/components/editor/ImageAdjuster";
+import type { TextImageContent, ImagePosition } from "@/types/slide";
 
 interface Props {
   content: TextImageContent;
@@ -42,6 +43,13 @@ export function TextImageForm({ content, onChange, onUploadImage }: Props) {
       </div>
       <Input label="Image Alt Text" value={content.image_alt} onChange={(e) => onChange({ image_alt: e.target.value })} />
       <Input label="Image Caption (optional)" value={content.image_caption ?? ""} onChange={(e) => onChange({ image_caption: e.target.value })} />
+      {content.image_url && (
+        <ImageAdjuster
+          imageUrl={content.image_url}
+          position={content.image_position}
+          onChange={(pos: ImagePosition) => onChange({ image_position: pos })}
+        />
+      )}
     </div>
   );
 }

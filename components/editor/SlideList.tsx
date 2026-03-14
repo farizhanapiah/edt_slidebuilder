@@ -7,8 +7,9 @@ import type { Slide } from "@/types/slide";
 import { useState } from "react";
 
 const LAYOUT_OPTIONS: LayoutType[] = [
-  "cover", "section_divider", "stats", "text_image",
-  "full_bleed_image", "content_list", "quote", "timeline", "thank_you",
+  "cover", "section_divider", "hero_impact", "big_number",
+  "stats", "text_image", "full_bleed_image", "comparison",
+  "icon_grid", "team", "content_list", "quote", "timeline", "thank_you",
   "table", "chart", "video", "image_gallery",
 ];
 

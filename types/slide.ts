@@ -11,7 +11,12 @@ export type LayoutType =
   | "table"
   | "chart"
   | "video"
-  | "image_gallery";
+  | "image_gallery"
+  | "hero_impact"
+  | "big_number"
+  | "icon_grid"
+  | "comparison"
+  | "team";
 
 export const LAYOUT_TYPE_LABELS: Record<LayoutType, string> = {
   cover: "Cover",
@@ -27,7 +32,20 @@ export const LAYOUT_TYPE_LABELS: Record<LayoutType, string> = {
   chart: "Chart",
   video: "Video",
   image_gallery: "Image Gallery",
+  hero_impact: "Hero / Impact",
+  big_number: "Big Number",
+  icon_grid: "Icon Grid",
+  comparison: "Comparison",
+  team: "Team",
 };
+
+/* ── Shared types ── */
+
+export interface ImagePosition {
+  focal_x: number;   // 0-100, percentage from left (default 50)
+  focal_y: number;   // 0-100, percentage from top (default 50)
+  zoom: number;      // 1.0-3.0, default 1.0
+}
 
 /* ── Content schemas per layout type ── */
 
@@ -38,6 +56,7 @@ export interface CoverContent {
   client_name: string;
   deck_type_label: string;
   background_image_url?: string;
+  background_image_position?: ImagePosition;
   show_logo: boolean;
 }
 
@@ -68,11 +87,13 @@ export interface TextImageContent {
   image_alt: string;
   image_side: "left" | "right";
   image_caption?: string;
+  image_position?: ImagePosition;
 }
 
 export interface FullBleedImageContent {
   image_url: string;
   image_alt: string;
+  image_position?: ImagePosition;
   overlay_opacity: number;
   headline?: string;
   subtext?: string;
@@ -184,6 +205,7 @@ export interface GalleryImage {
   url: string;
   alt: string;
   caption?: string;
+  position?: ImagePosition;
 }
 
 export type GalleryMode = "carousel" | "tiled" | "album_flow";
@@ -199,6 +221,78 @@ export interface ImageGalleryContent {
   background_color: "black" | "blue";
 }
 
+/* ── Visual-first layout types ── */
+
+export interface HeroImpactContent {
+  headline: string;
+  headline_size: "xl" | "xxl";
+  subtext?: string;
+  background_image_url: string;
+  image_position?: ImagePosition;
+  overlay_opacity: number;
+  text_alignment: "left" | "center" | "right";
+  accent_bar: boolean;
+  show_logo: boolean;
+}
+
+export interface BigNumberContent {
+  eyebrow?: string;
+  number: string;
+  label: string;
+  context?: string;
+  background_image_url?: string;
+  image_position?: ImagePosition;
+  overlay_opacity: number;
+  accent_color: "blue" | "white";
+}
+
+export interface IconGridItem {
+  icon: string;
+  label: string;
+  description?: string;
+}
+
+export interface IconGridContent {
+  eyebrow?: string;
+  headline: string;
+  items: IconGridItem[];
+  columns: 2 | 3 | 4;
+  style: "minimal" | "cards" | "window_chrome";
+  background_color: "black" | "blue";
+}
+
+export interface ComparisonContent {
+  headline?: string;
+  eyebrow?: string;
+  left_label: string;
+  left_image_url: string;
+  left_image_alt: string;
+  left_image_position?: ImagePosition;
+  left_points?: string[];
+  right_label: string;
+  right_image_url: string;
+  right_image_alt: string;
+  right_image_position?: ImagePosition;
+  right_points?: string[];
+  divider_style: "line" | "vs" | "arrow";
+}
+
+export interface TeamMember {
+  name: string;
+  title: string;
+  image_url: string;
+  image_alt: string;
+  image_position?: ImagePosition;
+}
+
+export interface TeamContent {
+  eyebrow?: string;
+  headline: string;
+  members: TeamMember[];
+  layout: "grid" | "row";
+  show_window_chrome: boolean;
+}
+
 export type SlideContent =
   | CoverContent
   | SectionDividerContent
@@ -212,7 +306,12 @@ export type SlideContent =
   | TableContent
   | ChartContent
   | VideoContent
-  | ImageGalleryContent;
+  | ImageGalleryContent
+  | HeroImpactContent
+  | BigNumberContent
+  | IconGridContent
+  | ComparisonContent
+  | TeamContent;
 
 export interface Slide {
   id: string;
@@ -264,4 +363,19 @@ export function isVideoContent(c: SlideContent): c is VideoContent {
 }
 export function isImageGalleryContent(c: SlideContent): c is ImageGalleryContent {
   return "images" in c && "mode" in c;
+}
+export function isHeroImpactContent(c: SlideContent): c is HeroImpactContent {
+  return "headline_size" in c;
+}
+export function isBigNumberContent(c: SlideContent): c is BigNumberContent {
+  return "number" in c && "label" in c && "accent_color" in c;
+}
+export function isIconGridContent(c: SlideContent): c is IconGridContent {
+  return "items" in c && "columns" in c && "style" in c;
+}
+export function isComparisonContent(c: SlideContent): c is ComparisonContent {
+  return "left_label" in c && "right_label" in c;
+}
+export function isTeamContent(c: SlideContent): c is TeamContent {
+  return "members" in c;
 }

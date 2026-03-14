@@ -1,3 +1,4 @@
+import { PositionedImage } from "@/components/ui/PositionedImage";
 import type { FullBleedImageContent } from "@/types/slide";
 
 interface Props {
@@ -13,7 +14,7 @@ const positionStyles: Record<string, React.CSSProperties> = {
 };
 
 export function FullBleedImageSlide({ content, isExport }: Props) {
-  const { image_url, image_alt, overlay_opacity, headline, subtext, text_position, show_scan_lines } = content;
+  const { image_url, image_alt, image_position, overlay_opacity, headline, subtext, text_position, show_scan_lines } = content;
   const animate = !isExport;
 
   return (
@@ -23,10 +24,11 @@ export function FullBleedImageSlide({ content, isExport }: Props) {
     >
       {/* Background image */}
       {image_url ? (
-        <img
+        <PositionedImage
           src={image_url}
           alt={image_alt}
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }}
+          position={image_position}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
         />
       ) : (
         <div

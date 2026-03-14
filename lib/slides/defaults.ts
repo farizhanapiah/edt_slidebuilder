@@ -1,4 +1,4 @@
-import type { LayoutType, SlideContent, TableColumn } from "@/types/slide";
+import type { LayoutType, SlideContent, TableColumn, IconGridItem, TeamMember } from "@/types/slide";
 
 export const SLIDE_DEFAULTS: Record<LayoutType, SlideContent> = {
   cover: {
@@ -135,5 +135,61 @@ export const SLIDE_DEFAULTS: Record<LayoutType, SlideContent> = {
     tiled_layout: "2x2",
     show_captions: false,
     background_color: "black",
+  },
+  hero_impact: {
+    headline: "MAKE IT\nHAPPEN.",
+    headline_size: "xxl",
+    subtext: "",
+    background_image_url: "",
+    overlay_opacity: 55,
+    text_alignment: "left",
+    accent_bar: true,
+    show_logo: false,
+  },
+  big_number: {
+    eyebrow: "KEY METRIC",
+    number: "96%",
+    label: "METRIC DESCRIPTION",
+    context: "",
+    background_image_url: "",
+    overlay_opacity: 70,
+    accent_color: "blue",
+  },
+  icon_grid: {
+    eyebrow: "WHAT WE DO",
+    headline: "CAPABILITIES",
+    items: [
+      { icon: "🎯", label: "STRATEGY", description: "Define the vision" },
+      { icon: "🎨", label: "DESIGN", description: "Craft the experience" },
+      { icon: "⚡", label: "TECHNOLOGY", description: "Build the future" },
+      { icon: "📊", label: "ANALYTICS", description: "Measure impact" },
+    ] as IconGridItem[],
+    columns: 4,
+    style: "cards",
+    background_color: "black",
+  },
+  comparison: {
+    headline: "",
+    eyebrow: "COMPARISON",
+    left_label: "BEFORE",
+    left_image_url: "",
+    left_image_alt: "Before image",
+    left_points: [],
+    right_label: "AFTER",
+    right_image_url: "",
+    right_image_alt: "After image",
+    right_points: [],
+    divider_style: "line",
+  },
+  team: {
+    eyebrow: "THE TEAM",
+    headline: "WHO WE ARE",
+    members: [
+      { name: "Team Member", title: "Role", image_url: "", image_alt: "Team member photo" },
+      { name: "Team Member", title: "Role", image_url: "", image_alt: "Team member photo" },
+      { name: "Team Member", title: "Role", image_url: "", image_alt: "Team member photo" },
+    ] as TeamMember[],
+    layout: "row",
+    show_window_chrome: true,
   },
 };

@@ -1,4 +1,5 @@
 import { PixelGrid } from "@/components/ui/PixelGrid";
+import { PositionedImage } from "@/components/ui/PositionedImage";
 import type { TextImageContent } from "@/types/slide";
 
 interface Props {
@@ -7,7 +8,7 @@ interface Props {
 }
 
 export function TextImageSlide({ content, isExport }: Props) {
-  const { eyebrow, headline, body, image_url, image_alt, image_side, image_caption } = content;
+  const { eyebrow, headline, body, image_url, image_alt, image_side, image_caption, image_position } = content;
   const animate = !isExport;
   const imageLeft = image_side === "left";
 
@@ -105,10 +106,11 @@ export function TextImageSlide({ content, isExport }: Props) {
     >
       {image_url ? (
         <>
-          <img
+          <PositionedImage
             src={image_url}
             alt={image_alt}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            position={image_position}
+            style={{ width: "100%", height: "100%", display: "block" }}
           />
           {/* Subtle blue overlay */}
           <div

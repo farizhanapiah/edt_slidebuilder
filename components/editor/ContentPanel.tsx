@@ -13,12 +13,18 @@ import { TableForm } from "@/components/content-forms/TableForm";
 import { ChartForm } from "@/components/content-forms/ChartForm";
 import { VideoForm } from "@/components/content-forms/VideoForm";
 import { ImageGalleryForm } from "@/components/content-forms/ImageGalleryForm";
+import { HeroImpactForm } from "@/components/content-forms/HeroImpactForm";
+import { BigNumberForm } from "@/components/content-forms/BigNumberForm";
+import { IconGridForm } from "@/components/content-forms/IconGridForm";
+import { ComparisonForm } from "@/components/content-forms/ComparisonForm";
+import { TeamForm } from "@/components/content-forms/TeamForm";
 import { LAYOUT_TYPE_LABELS } from "@/types/slide";
 import type { Slide, SlideContent } from "@/types/slide";
 import type {
   CoverContent, SectionDividerContent, StatsContent, TextImageContent,
   FullBleedImageContent, ContentListContent, QuoteContent, TimelineContent, ThankYouContent,
   TableContent, ChartContent, VideoContent, ImageGalleryContent,
+  HeroImpactContent, BigNumberContent, IconGridContent, ComparisonContent, TeamContent,
 } from "@/types/slide";
 
 interface ContentPanelProps {
@@ -114,6 +120,21 @@ export function ContentPanel({ slide, onUpdate, onUploadImage }: ContentPanelPro
             onChange={update}
             onUploadImage={uploader}
           />
+        )}
+        {layout_type === "hero_impact" && (
+          <HeroImpactForm content={content as HeroImpactContent} onChange={update} onUploadImage={uploader} />
+        )}
+        {layout_type === "big_number" && (
+          <BigNumberForm content={content as BigNumberContent} onChange={update} onUploadImage={uploader} />
+        )}
+        {layout_type === "icon_grid" && (
+          <IconGridForm content={content as IconGridContent} onChange={update} />
+        )}
+        {layout_type === "comparison" && (
+          <ComparisonForm content={content as ComparisonContent} onChange={update} onUploadImage={uploader} />
+        )}
+        {layout_type === "team" && (
+          <TeamForm content={content as TeamContent} onChange={update} onUploadImage={uploader} />
         )}
       </div>
     </div>

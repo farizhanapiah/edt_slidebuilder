@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PixelGrid } from "@/components/ui/PixelGrid";
+import { PositionedImage } from "@/components/ui/PositionedImage";
 import type { ImageGalleryContent, GalleryImage, TiledLayout } from "@/types/slide";
 
 interface Props {
@@ -52,10 +53,11 @@ function ImageCell({
     >
       {image?.url ? (
         <>
-          <img
+          <PositionedImage
             src={image.url}
             alt={image.alt || ""}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            position={image.position}
+            style={{ width: "100%", height: "100%", display: "block" }}
           />
           {showCaption && image.caption && (
             <div
@@ -158,10 +160,11 @@ function CarouselGallery({
       >
         {current?.url ? (
           <>
-            <img
+            <PositionedImage
               src={current.url}
               alt={current.alt || ""}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              position={current.position}
+              style={{ width: "100%", height: "100%", display: "block" }}
             />
             {showCaptions && current.caption && (
               <div
@@ -405,10 +408,11 @@ function AlbumFlowGallery({
       >
         {featuredImg?.url ? (
           <>
-            <img
+            <PositionedImage
               src={featuredImg.url}
               alt={featuredImg.alt || ""}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              position={featuredImg.position}
+              style={{ width: "100%", height: "100%", display: "block" }}
             />
             {showCaptions && featuredImg.caption && (
               <div
@@ -497,10 +501,11 @@ function AlbumFlowGallery({
             aria-label={`View image ${i + 1}`}
           >
             {img?.url ? (
-              <img
+              <PositionedImage
                 src={img.url}
                 alt={img.alt || ""}
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                position={img.position}
+                style={{ width: "100%", height: "100%", display: "block" }}
               />
             ) : (
               <div

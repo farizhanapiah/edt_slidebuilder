@@ -72,7 +72,9 @@ export function SlideCanvas({ slide }: SlideCanvasProps) {
               pointerEvents: "none",
             }}
           >
-            <SlideRenderer key={slide.id} slide={slide} />
+            <div key={slide.id} className="canvas-slide-enter">
+              <SlideRenderer slide={slide} />
+            </div>
           </div>
         </div>
       ) : (

@@ -2,7 +2,8 @@
 
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import type { FullBleedImageContent } from "@/types/slide";
+import { ImageAdjuster } from "@/components/editor/ImageAdjuster";
+import type { FullBleedImageContent, ImagePosition } from "@/types/slide";
 
 interface Props {
   content: FullBleedImageContent;
@@ -32,6 +33,13 @@ export function FullBleedImageForm({ content, onChange, onUploadImage }: Props) 
         )}
       </div>
       <Input label="Image Alt Text" value={content.image_alt} onChange={(e) => onChange({ image_alt: e.target.value })} />
+      {content.image_url && (
+        <ImageAdjuster
+          imageUrl={content.image_url}
+          position={content.image_position}
+          onChange={(pos: ImagePosition) => onChange({ image_position: pos })}
+        />
+      )}
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         <label style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#8C8C8C" }}>
           Overlay Opacity: {content.overlay_opacity}%

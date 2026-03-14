@@ -13,6 +13,12 @@ import { ChartSlide } from "./ChartSlide";
 import { VideoSlide } from "./VideoSlide";
 import { ImageGallerySlide } from "./ImageGallerySlide";
 
+import { HeroImpactSlide } from "./HeroImpactSlide";
+import { BigNumberSlide } from "./BigNumberSlide";
+import { IconGridSlide } from "./IconGridSlide";
+import { ComparisonSlide } from "./ComparisonSlide";
+import { TeamSlide } from "./TeamSlide";
+
 import type {
   CoverContent,
   SectionDividerContent,
@@ -27,6 +33,11 @@ import type {
   ChartContent,
   VideoContent,
   ImageGalleryContent,
+  HeroImpactContent,
+  BigNumberContent,
+  IconGridContent,
+  ComparisonContent,
+  TeamContent,
 } from "@/types/slide";
 
 interface SlideRendererProps {
@@ -64,6 +75,16 @@ export function SlideRenderer({ slide, isExport }: SlideRendererProps) {
       return <VideoSlide content={content as VideoContent} isExport={isExport} />;
     case "image_gallery":
       return <ImageGallerySlide content={content as ImageGalleryContent} isExport={isExport} />;
+    case "hero_impact":
+      return <HeroImpactSlide content={content as HeroImpactContent} isExport={isExport} />;
+    case "big_number":
+      return <BigNumberSlide content={content as BigNumberContent} isExport={isExport} />;
+    case "icon_grid":
+      return <IconGridSlide content={content as IconGridContent} isExport={isExport} />;
+    case "comparison":
+      return <ComparisonSlide content={content as ComparisonContent} isExport={isExport} />;
+    case "team":
+      return <TeamSlide content={content as TeamContent} isExport={isExport} />;
     default:
       return (
         <div

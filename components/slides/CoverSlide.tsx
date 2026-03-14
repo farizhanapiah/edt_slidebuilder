@@ -1,4 +1,5 @@
 import { PixelGrid } from "@/components/ui/PixelGrid";
+import { PositionedImage } from "@/components/ui/PositionedImage";
 import type { CoverContent } from "@/types/slide";
 
 interface Props {
@@ -14,6 +15,7 @@ export function CoverSlide({ content, isExport }: Props) {
     client_name,
     deck_type_label,
     background_image_url,
+    background_image_position,
     show_logo,
   } = content;
 
@@ -31,15 +33,11 @@ export function CoverSlide({ content, isExport }: Props) {
       {/* Background image */}
       {background_image_url && (
         <>
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              backgroundImage: `url(${background_image_url})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              zIndex: 0,
-            }}
+          <PositionedImage
+            src={background_image_url}
+            alt=""
+            position={background_image_position}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
           />
           {/* Dark overlay */}
           <div
