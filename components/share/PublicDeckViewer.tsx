@@ -13,10 +13,9 @@ interface PublicDeckViewerProps {
   deck: Deck;
   slides: Slide[];
   shareToken?: string;
-  isExportMode?: boolean;
 }
 
-export function PublicDeckViewer({ deck, slides, shareToken, isExportMode }: PublicDeckViewerProps) {
+export function PublicDeckViewer({ deck, slides, shareToken }: PublicDeckViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [scale, setScale] = useState(1);
@@ -54,7 +53,6 @@ export function PublicDeckViewer({ deck, slides, shareToken, isExportMode }: Pub
 
   // Keyboard navigation
   useEffect(() => {
-    if (isExportMode) return;
     function onKey(e: KeyboardEvent) {
       if (showFeedback) return;
       if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ") {
@@ -69,11 +67,10 @@ export function PublicDeckViewer({ deck, slides, shareToken, isExportMode }: Pub
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [currentIndex, goTo, isExportMode, showFeedback]);
+  }, [currentIndex, goTo, showFeedback]);
 
   // Responsive scaling
   useEffect(() => {
-    if (isExportMode) return;
     function updateScale() {
       const vw = window.innerWidth;
       const vh = window.innerHeight - 56; // subtract navbar
@@ -82,7 +79,7 @@ export function PublicDeckViewer({ deck, slides, shareToken, isExportMode }: Pub
     updateScale();
     window.addEventListener("resize", updateScale);
     return () => window.removeEventListener("resize", updateScale);
-  }, [isExportMode]);
+  }, []);
 
   function onTouchStart(e: React.TouchEvent) {
     touchStartX.current = e.touches[0].clientX;
@@ -116,22 +113,6 @@ export function PublicDeckViewer({ deck, slides, shareToken, isExportMode }: Pub
     } finally {
       setFbSubmitting(false);
     }
-  }
-
-  // ── Export mode: stacked vertically for Puppeteer ──
-  if (isExportMode) {
-    return (
-      <div data-slides-ready={slides.length} style={{ backgroundColor: "#0A0A0A" }}>
-        {slides.map((slide) => (
-          <div
-            key={slide.id}
-            style={{ width: SLIDE_W, height: SLIDE_H, overflow: "hidden", pageBreakAfter: "always" }}
-          >
-            <SlideRenderer slide={slide} isExport />
-          </div>
-        ))}
-      </div>
-    );
   }
 
   const currentSlide = slides[currentIndex];

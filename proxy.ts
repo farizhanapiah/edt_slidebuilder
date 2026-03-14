@@ -2,17 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function proxy(request: NextRequest) {
-  const { pathname, searchParams } = request.nextUrl;
-
-  // Allow Puppeteer export access via secret token
-  const exportToken = searchParams.get("exportToken");
-  if (
-    exportToken &&
-    exportToken === process.env.EXPORT_SECRET &&
-    pathname.includes("/preview")
-  ) {
-    return NextResponse.next();
-  }
+  const { pathname } = request.nextUrl;
 
   let supabaseResponse = NextResponse.next({ request });
 

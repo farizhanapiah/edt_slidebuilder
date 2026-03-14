@@ -11,20 +11,6 @@ const nextConfig: NextConfig = {
     ],
     unoptimized: false,
   },
-  // Allow the Puppeteer preview page to render without strict CSP
-  async headers() {
-    return [
-      {
-        source: "/decks/:deckId/preview",
-        headers: [
-          {
-            key: "X-Robots-Tag",
-            value: "noindex, nofollow",
-          },
-        ],
-      },
-    ];
-  },
 };
 
 export default nextConfig;

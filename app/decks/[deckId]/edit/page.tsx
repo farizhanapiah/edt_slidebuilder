@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { SlideList } from "@/components/editor/SlideList";
 import { SlideCanvas } from "@/components/editor/SlideCanvas";
 import { ContentPanel } from "@/components/editor/ContentPanel";
 import { EditorTopbar } from "@/components/layout/EditorTopbar";
 import { AiAssistantPanel } from "@/components/editor/AiAssistantPanel";
+import { SlideRenderer } from "@/components/slides/SlideRenderer";
 import type { Deck } from "@/types/deck";
 import type { Slide, LayoutType, SlideContent } from "@/types/slide";
 
@@ -27,6 +28,8 @@ export default function EditorPage() {
   const [aiOpen, setAiOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const exportContainerRef = useRef<HTMLDivElement>(null);
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch initial data
@@ -180,17 +183,24 @@ export default function EditorPage() {
     });
   }
 
-  async function handleExportPdf() {
-    const res = await fetch(`/api/export/${deckId}`);
-    if (!res.ok) { alert("PDF export failed. Please try again."); return; }
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${deck?.title ?? "deck"}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+  const handleExportPdf = useCallback(async () => {
+    setExporting(true);
+    // Give React a tick to render the hidden slide container
+    await new Promise((r) => setTimeout(r, 800));
+
+    try {
+      const container = exportContainerRef.current;
+      if (!container) throw new Error("No export container");
+
+      const { exportSlidesToPdf } = await import("@/lib/pdf/client-export");
+      await exportSlidesToPdf(container, `${deck?.title ?? "deck"}.pdf`);
+    } catch (err) {
+      console.error("PDF export error:", err);
+      alert("PDF export failed. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  }, [deck?.title]);
 
   async function handleUploadImage(file: File, slideId: string): Promise<string> {
     const formData = new FormData();
@@ -261,6 +271,29 @@ export default function EditorPage() {
           }}
           onClose={() => setAiOpen(false)}
         />
+      )}
+
+      {/* Off-screen container for PDF capture (must be fully opaque for html2canvas) */}
+      {exporting && (
+        <div
+          ref={exportContainerRef}
+          aria-hidden
+          style={{
+            position: "fixed",
+            left: "-9999px",
+            top: 0,
+            pointerEvents: "none",
+          }}
+        >
+          {slides.map((slide) => (
+            <div
+              key={slide.id}
+              style={{ width: 1280, height: 720, overflow: "hidden" }}
+            >
+              <SlideRenderer slide={slide} isExport />
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
