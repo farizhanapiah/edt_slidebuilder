@@ -80,19 +80,37 @@ function collectImageUrls(container: HTMLElement): string[] {
   return Array.from(urls);
 }
 
-/** Replace image sources in a cloned element tree using a URL→dataURI map. */
+/** Replace image sources in a cloned element tree using a URL→dataURI map.
+ *  Also converts <img style="object-fit:cover"> to background-image divs
+ *  because html2canvas doesn't handle object-fit correctly. */
 function replaceImagesInClone(
   clone: HTMLElement,
   urlMap: Map<string, string>
 ) {
-  // Replace <img> src
+  // Replace <img> elements
   clone.querySelectorAll("img").forEach((img) => {
-    const dataUrl = urlMap.get(img.src);
-    if (dataUrl) {
-      img.src = dataUrl;
-      img.removeAttribute("srcset");
-      img.removeAttribute("loading");
+    const dataUrl = urlMap.get(img.src) ?? img.src;
+
+    // html2canvas can't handle object-fit — swap to a background-image div
+    const fit = img.style.objectFit || window.getComputedStyle(img).objectFit;
+    if (fit === "cover" || fit === "contain") {
+      const div = clone.ownerDocument.createElement("div");
+      // Copy all dimensional styles from the img
+      div.style.cssText = img.style.cssText;
+      div.style.backgroundImage = `url(${dataUrl})`;
+      div.style.backgroundSize = fit;     // "cover" or "contain"
+      div.style.backgroundPosition = "center";
+      div.style.backgroundRepeat = "no-repeat";
+      // Remove object-fit (not relevant for div)
+      div.style.objectFit = "";
+      img.parentElement?.replaceChild(div, img);
+      return;
     }
+
+    // Normal images: just swap src
+    img.src = dataUrl;
+    img.removeAttribute("srcset");
+    img.removeAttribute("loading");
   });
 
   // Replace CSS background-image urls
