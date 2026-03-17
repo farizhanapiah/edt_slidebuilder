@@ -10,7 +10,7 @@ const LAYOUT_OPTIONS: LayoutType[] = [
   "cover", "section_divider", "hero_impact", "big_number",
   "stats", "text_image", "full_bleed_image", "comparison",
   "icon_grid", "team", "content_list", "quote", "timeline", "thank_you",
-  "table", "chart", "video", "image_gallery",
+  "table", "chart", "video", "image_gallery", "pinterest_inspo",
 ];
 
 interface SlideListProps {
