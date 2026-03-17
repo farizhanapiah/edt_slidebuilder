@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { getBrowser } from "@/lib/puppeteer/browser";
 
 interface ScrapedPin {
   image_url: string;
@@ -10,7 +9,7 @@ interface ScrapedPin {
 }
 
 const PINTEREST_URL_RE =
-  /^https?:\/\/(www\.)?pinterest\.(com|co\.uk|ca|com\.au|de|fr|es|it|jp|kr|se|nz|at|ch|ru|cl|com\.mx|co|pt|ie)(\/[\w._-]+){1,3}\/?$/;
+  /^https?:\/\/(www\.)?pinterest\.(com|co\.uk|ca|com\.au|de|fr|es|it|jp|kr|se|nz|at|ch|ru|cl|com\.mx|co|pt|ie)(\/[\w._-]+){1,4}\/?$/;
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -30,104 +29,24 @@ export async function POST(request: Request) {
     );
   }
 
-  let page;
   try {
-    const browser = await getBrowser();
-    page = await browser.newPage();
+    const html = await fetchBoardHtml(board_url.trim());
 
-    // Block unnecessary resources to speed up loading
-    await page.setRequestInterception(true);
-    page.on("request", (req) => {
-      const type = req.resourceType();
-      if (["font", "media"].includes(type)) {
-        req.abort();
-      } else {
-        req.continue();
-      }
-    });
+    // Try multiple extraction strategies
+    let pins: ScrapedPin[] = [];
 
-    await page.setViewport({ width: 1280, height: 900 });
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    );
+    // Strategy 1: Parse __PWS_DATA__ embedded JSON
+    pins = extractFromPwsData(html);
 
-    await page.goto(board_url.trim(), {
-      waitUntil: "networkidle2",
-      timeout: 30000,
-    });
-
-    // Wait for pin images to appear
-    await page.waitForSelector('img[src*="pinimg.com"]', { timeout: 10000 }).catch(() => {});
-
-    // Scroll down a few times to load more pins
-    for (let i = 0; i < 4; i++) {
-      await page.evaluate(() => window.scrollBy(0, window.innerHeight));
-      await new Promise((r) => setTimeout(r, 1200));
+    // Strategy 2: Parse any application/json script tags
+    if (pins.length === 0) {
+      pins = extractFromJsonScripts(html);
     }
 
-    // Extract pin data from the DOM
-    const pins: ScrapedPin[] = await page.evaluate(() => {
-      const results: ScrapedPin[] = [];
-      const seen = new Set<string>();
-
-      // Pinterest renders pins as divs with img elements containing pinimg.com URLs
-      const images = document.querySelectorAll('img[src*="pinimg.com"]');
-
-      for (const img of images) {
-        const src = (img as HTMLImageElement).src;
-        if (!src || seen.has(src)) continue;
-
-        // Upgrade to highest resolution
-        const highRes = src
-          .replace(/\/\d+x\d+\//, "/originals/")
-          .replace(/\/\d+x\//, "/originals/");
-
-        // Deduplicate by the base path (ignoring resolution prefix)
-        const basePath = highRes.replace(/https:\/\/i\.pinimg\.com\/[^/]+\//, "");
-        if (seen.has(basePath)) continue;
-        seen.add(basePath);
-        seen.add(src);
-
-        // Try to find title/description from nearby elements
-        const pinContainer = (img as HTMLElement).closest("[data-test-id='pin']")
-          || (img as HTMLElement).closest("[data-test-id='pinWrapper']")
-          || (img as HTMLElement).closest("div[data-grid-item]")
-          || (img as HTMLElement).closest("div[role='listitem']")
-          || (img as HTMLElement).parentElement?.parentElement?.parentElement;
-
-        let title = (img as HTMLImageElement).alt || "";
-        let description = "";
-        let pinUrl = "";
-
-        if (pinContainer) {
-          // Try to get the link to the individual pin
-          const link = pinContainer.querySelector("a[href*='/pin/']") as HTMLAnchorElement;
-          if (link) {
-            pinUrl = link.href;
-          }
-
-          // Try to find title text
-          if (!title) {
-            const titleEl = pinContainer.querySelector("[title]");
-            if (titleEl) title = titleEl.getAttribute("title") || "";
-          }
-
-          // Try to find description
-          const descEl = pinContainer.querySelector("[data-test-id='pinDescription']")
-            || pinContainer.querySelector("[data-test-id='truncated-description']");
-          if (descEl) description = (descEl as HTMLElement).innerText || "";
-        }
-
-        results.push({
-          image_url: highRes,
-          title: title.slice(0, 200),
-          description: description.slice(0, 500),
-          pin_url: pinUrl,
-        });
-      }
-
-      return results;
-    });
+    // Strategy 3: Regex fallback for pinimg.com URLs
+    if (pins.length === 0) {
+      pins = extractFromRegex(html);
+    }
 
     if (pins.length === 0) {
       return NextResponse.json(
@@ -136,25 +55,214 @@ export async function POST(request: Request) {
       );
     }
 
-    // Cap at 50
     const capped = pins.slice(0, 50);
-
     return NextResponse.json({ pins: capped, count: capped.length });
   } catch (err) {
     console.error("[pinterest/scrape] Error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
 
-    if (message.includes("timeout") || message.includes("Timeout")) {
+    if (message.includes("404")) {
       return NextResponse.json(
-        { error: "Pinterest page took too long to load. Try again." },
-        { status: 504 },
+        { error: "Board not found. Check the URL and ensure the board is public." },
+        { status: 404 },
       );
     }
 
     return NextResponse.json({ error: "Failed to scrape Pinterest board" }, { status: 500 });
-  } finally {
-    if (page) {
-      await page.close().catch(() => {});
+  }
+}
+
+/* ── Fetch board HTML with browser-like headers ── */
+
+async function fetchBoardHtml(url: string): Promise<string> {
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+      Accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+      "Sec-Fetch-Dest": "document",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-Site": "none",
+      "Sec-Fetch-User": "?1",
+      "Upgrade-Insecure-Requests": "1",
+    },
+    redirect: "follow",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Pinterest returned ${res.status}`);
+  }
+
+  return res.text();
+}
+
+/* ── Strategy 1: Extract from __PWS_DATA__ ── */
+
+function extractFromPwsData(html: string): ScrapedPin[] {
+  const match = html.match(
+    /<script\s+id="__PWS_DATA__"[^>]*>([\s\S]*?)<\/script>/,
+  );
+  if (!match) return [];
+
+  try {
+    const data = JSON.parse(match[1]);
+    return traverseForPins(data);
+  } catch {
+    return [];
+  }
+}
+
+/* ── Strategy 2: Parse all application/json script tags ── */
+
+function extractFromJsonScripts(html: string): ScrapedPin[] {
+  const pins: ScrapedPin[] = [];
+  const scriptRe =
+    /<script[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/g;
+  let scriptMatch;
+
+  while ((scriptMatch = scriptRe.exec(html)) !== null) {
+    try {
+      const data = JSON.parse(scriptMatch[1]);
+      pins.push(...traverseForPins(data));
+    } catch {
+      /* continue */
     }
   }
+
+  return pins;
+}
+
+/* ── Strategy 3: Regex fallback for pinimg.com URLs ── */
+
+function extractFromRegex(html: string): ScrapedPin[] {
+  const pins: ScrapedPin[] = [];
+  const seen = new Set<string>();
+
+  // Match high-res Pinterest CDN URLs
+  const patterns = [
+    /https:\/\/i\.pinimg\.com\/originals\/[a-f0-9/]+\.\w+/g,
+    /https:\/\/i\.pinimg\.com\/736x\/[a-f0-9/]+\.\w+/g,
+    /https:\/\/i\.pinimg\.com\/564x\/[a-f0-9/]+\.\w+/g,
+    /https:\/\/i\.pinimg\.com\/474x\/[a-f0-9/]+\.\w+/g,
+  ];
+
+  for (const pattern of patterns) {
+    const matches = html.match(pattern) || [];
+    for (const url of matches) {
+      const highRes = upgradeImageUrl(url);
+      const base = highRes.replace(/https:\/\/i\.pinimg\.com\/[^/]+\//, "");
+      if (seen.has(base)) continue;
+      seen.add(base);
+
+      pins.push({
+        image_url: highRes,
+        title: "",
+        description: "",
+        pin_url: "",
+      });
+    }
+    // If we found originals, don't bother with smaller sizes
+    if (pins.length > 0) break;
+  }
+
+  return pins;
+}
+
+/* ── Recursive traversal to find pin-like objects in JSON ── */
+
+function traverseForPins(data: unknown): ScrapedPin[] {
+  const pins: ScrapedPin[] = [];
+  const seen = new Set<string>();
+
+  function traverse(obj: unknown, depth: number): void {
+    if (depth > 12 || !obj || typeof obj !== "object") return;
+
+    const record = obj as Record<string, unknown>;
+
+    // Pinterest pin objects typically have an `images` field with resolution variants
+    if (record.images && typeof record.images === "object") {
+      const images = record.images as Record<
+        string,
+        { url?: string; width?: number }
+      >;
+      const imageUrl =
+        images.orig?.url ||
+        images["1200x"]?.url ||
+        images["736x"]?.url ||
+        images["564x"]?.url ||
+        images["474x"]?.url ||
+        "";
+
+      if (imageUrl && imageUrl.includes("pinimg.com")) {
+        const highRes = upgradeImageUrl(imageUrl);
+        const base = highRes.replace(/https:\/\/i\.pinimg\.com\/[^/]+\//, "");
+        if (!seen.has(base)) {
+          seen.add(base);
+          pins.push({
+            image_url: highRes,
+            title:
+              typeof record.title === "string" ? record.title.slice(0, 200) : "",
+            description:
+              typeof record.description === "string"
+                ? record.description.slice(0, 500)
+                : typeof record.description_html === "string"
+                  ? record.description_html.replace(/<[^>]+>/g, "").slice(0, 500)
+                  : "",
+            pin_url:
+              typeof record.id === "string"
+                ? `https://www.pinterest.com/pin/${record.id}/`
+                : "",
+          });
+        }
+        return;
+      }
+    }
+
+    // Also check for `image_signature` pattern (older Pinterest format)
+    if (
+      typeof record.image_large_url === "string" &&
+      record.image_large_url.includes("pinimg.com")
+    ) {
+      const highRes = upgradeImageUrl(record.image_large_url);
+      const base = highRes.replace(/https:\/\/i\.pinimg\.com\/[^/]+\//, "");
+      if (!seen.has(base)) {
+        seen.add(base);
+        pins.push({
+          image_url: highRes,
+          title:
+            typeof record.title === "string" ? record.title.slice(0, 200) : "",
+          description:
+            typeof record.description === "string"
+              ? record.description.slice(0, 500)
+              : "",
+          pin_url:
+            typeof record.id === "string"
+              ? `https://www.pinterest.com/pin/${record.id}/`
+              : "",
+        });
+      }
+      return;
+    }
+
+    if (Array.isArray(obj)) {
+      for (const item of obj) traverse(item, depth + 1);
+    } else {
+      for (const value of Object.values(record)) traverse(value, depth + 1);
+    }
+  }
+
+  traverse(data, 0);
+  return pins;
+}
+
+/* ── Upgrade image URL to highest resolution ── */
+
+function upgradeImageUrl(url: string): string {
+  return url
+    .replace(/\/\d+x\d+\//, "/originals/")
+    .replace(/\/\d+x\//, "/originals/");
 }
