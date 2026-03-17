@@ -44,6 +44,9 @@ Valid layout types and their required content fields:
 "icon_grid": { eyebrow, headline, items: [{ icon: "<emoji>", label, description: "" }], columns: 2|3|4, style: "minimal"|"cards"|"window_chrome", background_color: "black"|"blue" }
 "comparison": { headline: "", eyebrow, left_label, left_image_url: "", left_image_alt, left_points: [], right_label, right_image_url: "", right_image_alt, right_points: [], divider_style: "line"|"vs"|"arrow" }
 "team": { eyebrow, headline, members: [{ name, title, image_url: "", image_alt }], layout: "grid"|"row", show_window_chrome: true }
+"pinterest_inspo": { headline, eyebrow: "", board_url: "", pins: [], background_color: "black"|"blue" }
+
+NOTE: "pinterest_inspo" is for mood boards / visual inspiration. Pins must be imported manually from a Pinterest board URL — only set headline, eyebrow, and background_color when generating.
 
 Structure guidelines for a ${deckTypeLabel}:
 - Always start with a "cover" slide
@@ -56,7 +59,7 @@ CRITICAL — TEMPLATE VARIETY IS MANDATORY:
 - NEVER use "content_list" or "text_image" back-to-back. Alternate between visual and text-based types.
 - NEVER create 3+ text-heavy slides in a row. After any text slide, the next MUST be a visual type (hero_impact, big_number, full_bleed_image, comparison, icon_grid, image_gallery, or chart).
 - Every deck MUST include at least one of EACH of these visual types: hero_impact, big_number, icon_grid.
-- Treat the 19 layout types as a palette — use as many as the content allows. A good deck uses 10+ different types.
+- Treat the 20 layout types as a palette — use as many as the content allows. A good deck uses 10+ different types.
 
 Visual-first guidelines — PRIORITIZE visual slide types:
 - Use "hero_impact" for key messages, bold statements, and section openers (2-5 word headlines only). Use at least 2 per deck.

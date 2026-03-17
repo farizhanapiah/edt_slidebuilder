@@ -16,7 +16,8 @@ export type LayoutType =
   | "big_number"
   | "icon_grid"
   | "comparison"
-  | "team";
+  | "team"
+  | "pinterest_inspo";
 
 export const LAYOUT_TYPE_LABELS: Record<LayoutType, string> = {
   cover: "Cover",
@@ -37,6 +38,7 @@ export const LAYOUT_TYPE_LABELS: Record<LayoutType, string> = {
   icon_grid: "Icon Grid",
   comparison: "Comparison",
   team: "Team",
+  pinterest_inspo: "Pinterest Inspo",
 };
 
 /* ── Shared types ── */
@@ -293,6 +295,23 @@ export interface TeamContent {
   show_window_chrome: boolean;
 }
 
+/* ── Pinterest Inspo ── */
+
+export interface PinterestPin {
+  image_url: string;
+  title: string;
+  description: string;
+  pin_url: string;
+}
+
+export interface PinterestInspoContent {
+  headline: string;
+  eyebrow?: string;
+  board_url: string;
+  pins: PinterestPin[];
+  background_color: "black" | "blue";
+}
+
 export type SlideContent =
   | CoverContent
   | SectionDividerContent
@@ -311,7 +330,8 @@ export type SlideContent =
   | BigNumberContent
   | IconGridContent
   | ComparisonContent
-  | TeamContent;
+  | TeamContent
+  | PinterestInspoContent;
 
 export interface Slide {
   id: string;
@@ -378,4 +398,7 @@ export function isComparisonContent(c: SlideContent): c is ComparisonContent {
 }
 export function isTeamContent(c: SlideContent): c is TeamContent {
   return "members" in c;
+}
+export function isPinterestInspoContent(c: SlideContent): c is PinterestInspoContent {
+  return "pins" in c && "board_url" in c;
 }

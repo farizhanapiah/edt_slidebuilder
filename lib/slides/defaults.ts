@@ -1,4 +1,4 @@
-import type { LayoutType, SlideContent, TableColumn, IconGridItem, TeamMember } from "@/types/slide";
+import type { LayoutType, SlideContent, TableColumn, IconGridItem, TeamMember, PinterestPin } from "@/types/slide";
 
 export const SLIDE_DEFAULTS: Record<LayoutType, SlideContent> = {
   cover: {
@@ -191,5 +191,12 @@ export const SLIDE_DEFAULTS: Record<LayoutType, SlideContent> = {
     ] as TeamMember[],
     layout: "row",
     show_window_chrome: true,
+  },
+  pinterest_inspo: {
+    headline: "INSPIRATION",
+    eyebrow: "MOOD BOARD",
+    board_url: "",
+    pins: [] as PinterestPin[],
+    background_color: "black",
   },
 };

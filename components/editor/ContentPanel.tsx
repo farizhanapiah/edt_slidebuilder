@@ -18,6 +18,7 @@ import { BigNumberForm } from "@/components/content-forms/BigNumberForm";
 import { IconGridForm } from "@/components/content-forms/IconGridForm";
 import { ComparisonForm } from "@/components/content-forms/ComparisonForm";
 import { TeamForm } from "@/components/content-forms/TeamForm";
+import { PinterestInspoForm } from "@/components/content-forms/PinterestInspoForm";
 import { LAYOUT_TYPE_LABELS } from "@/types/slide";
 import type { Slide, SlideContent } from "@/types/slide";
 import type {
@@ -25,6 +26,7 @@ import type {
   FullBleedImageContent, ContentListContent, QuoteContent, TimelineContent, ThankYouContent,
   TableContent, ChartContent, VideoContent, ImageGalleryContent,
   HeroImpactContent, BigNumberContent, IconGridContent, ComparisonContent, TeamContent,
+  PinterestInspoContent,
 } from "@/types/slide";
 
 interface ContentPanelProps {
@@ -135,6 +137,9 @@ export function ContentPanel({ slide, onUpdate, onUploadImage }: ContentPanelPro
         )}
         {layout_type === "team" && (
           <TeamForm content={content as TeamContent} onChange={update} onUploadImage={uploader} />
+        )}
+        {layout_type === "pinterest_inspo" && (
+          <PinterestInspoForm content={content as PinterestInspoContent} onChange={update} />
         )}
       </div>
     </div>

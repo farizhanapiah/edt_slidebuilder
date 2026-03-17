@@ -18,6 +18,7 @@ import { BigNumberSlide } from "./BigNumberSlide";
 import { IconGridSlide } from "./IconGridSlide";
 import { ComparisonSlide } from "./ComparisonSlide";
 import { TeamSlide } from "./TeamSlide";
+import { PinterestInspoSlide } from "./PinterestInspoSlide";
 
 import type {
   CoverContent,
@@ -38,6 +39,7 @@ import type {
   IconGridContent,
   ComparisonContent,
   TeamContent,
+  PinterestInspoContent,
 } from "@/types/slide";
 
 interface SlideRendererProps {
@@ -85,6 +87,8 @@ export function SlideRenderer({ slide, isExport }: SlideRendererProps) {
       return <ComparisonSlide content={content as ComparisonContent} isExport={isExport} />;
     case "team":
       return <TeamSlide content={content as TeamContent} isExport={isExport} />;
+    case "pinterest_inspo":
+      return <PinterestInspoSlide content={content as PinterestInspoContent} isExport={isExport} />;
     default:
       return (
         <div
