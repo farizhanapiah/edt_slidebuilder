@@ -2,6 +2,7 @@ import type { Deck } from "@/types/deck";
 import type { Slide } from "@/types/slide";
 import { DECK_TYPE_LABELS } from "@/types/deck";
 import { LAYOUT_TYPE_LABELS } from "@/types/slide";
+import { formatVideoRepositoryForPrompt } from "./video-repository";
 
 export function buildGenerateDeckPrompt(params: {
   title: string;
@@ -48,6 +49,10 @@ Valid layout types and their required content fields:
 
 NOTE: "pinterest_inspo" is for mood boards / visual inspiration. Pins must be imported manually from a Pinterest board URL — only set headline, eyebrow, and background_color when generating.
 
+EDT VIDEO REPOSITORY — When generating "video" slides, use ONLY these real EDT YouTube URLs:
+
+${formatVideoRepositoryForPrompt()}
+
 Structure guidelines for a ${deckTypeLabel}:
 - Always start with a "cover" slide
 - Use "section_divider" slides to separate major sections (numbered 01, 02, 03...)
@@ -57,7 +62,7 @@ Structure guidelines for a ${deckTypeLabel}:
 CRITICAL — TEMPLATE VARIETY IS MANDATORY:
 - You MUST use at least 8 DIFFERENT layout types per deck. Never repeat the same layout type more than twice (except section_divider which can repeat as needed).
 - NEVER use "content_list" or "text_image" back-to-back. Alternate between visual and text-based types.
-- NEVER create 3+ text-heavy slides in a row. After any text slide, the next MUST be a visual type (hero_impact, big_number, full_bleed_image, comparison, icon_grid, image_gallery, or chart).
+- NEVER create 3+ text-heavy slides in a row. After any text slide, the next MUST be a visual type (hero_impact, big_number, full_bleed_image, comparison, icon_grid, image_gallery, chart, or video).
 - Every deck MUST include at least one of EACH of these visual types: hero_impact, big_number, icon_grid.
 - Treat the 20 layout types as a palette — use as many as the content allows. A good deck uses 10+ different types.
 
@@ -73,12 +78,21 @@ Visual-first guidelines — PRIORITIZE visual slide types:
 - Keep text minimal: headlines 2-5 words, body copy 1-2 short sentences max.
 - Every deck MUST have at least 4 image-centric slides (hero_impact, full_bleed_image, comparison, text_image, or image_gallery).
 
+VIDEO SLIDE GUIDELINES:
+- Every deck MUST include at least one "video" slide using a real EDT YouTube URL from the repository above.
+- DEFAULT: Always include the "EDT Showreel 2025" video (marked ★DEFAULT) UNLESS a more specific video directly matches the deck's topic, technology, or category.
+- Match videos by CATEGORY and TECH INVOLVED only. Do NOT match by client name — even if a video was made for the same client, only include it if the technology or category is relevant to the deck's topic.
+- If multiple videos are relevant to the deck's topic, you may include up to 3 video slides maximum — each with a DIFFERENT video.
+- Place video slides AFTER the relevant section divider or content they illustrate — never place two video slides back-to-back.
+- For each "video" slide: set headline to a short 2-4 word label (e.g. "SEE IT LIVE", "THE TECH", "IN ACTION"), set caption to the video title from the repository, and copy the exact YouTube URL into video_url.
+- Always set: autoplay: false, show_controls: true, background_color: "black".
+
 Recommended deck flows (adapt based on content, but ALWAYS maximize type variety):
-- For case studies (12-16 slides): cover → hero_impact (project name, dramatic) → section_divider (challenge) → text_image (problem context) → comparison (before/after) → section_divider (solution) → icon_grid (approach/tools) → full_bleed_image (process shot) → section_divider (results) → big_number (hero metric) → stats (supporting data, 3-4 items) → chart (trend/growth) → quote (client testimonial) → team (project team) → thank_you
-- For pitch decks (12-16 slides): cover → hero_impact (bold statement) → section_divider (problem) → big_number (market size/pain point) → comparison (current vs ideal) → section_divider (solution) → icon_grid (capabilities) → text_image (how it works) → full_bleed_image (product shot) → section_divider (results) → stats (proof points) → chart (growth/traction) → team → quote (endorsement) → thank_you
-- For event recaps (10-14 slides): cover → hero_impact (event name) → full_bleed_image (hero shot) → big_number (attendance) → icon_grid (highlights) → image_gallery (moments) → stats (engagement metrics) → comparison (goals vs actual) → quote (attendee quote) → timeline (event journey) → thank_you
-- For proposals (12-16 slides): cover → hero_impact (vision statement) → section_divider (understanding) → text_image (client context) → comparison (challenge/opportunity) → section_divider (approach) → icon_grid (methodology) → timeline (phases) → section_divider (investment) → table (pricing) → big_number (ROI) → team → thank_you
-- For reports (12-16 slides): cover → hero_impact (key finding) → big_number (headline metric) → section_divider (analysis) → chart (primary data) → stats (supporting metrics) → comparison (benchmark) → icon_grid (takeaways) → text_image (deep dive) → section_divider (next steps) → content_list (action items) → thank_you
+- For case studies (12-16 slides): cover → hero_impact (project name, dramatic) → section_divider (challenge) → text_image (problem context) → comparison (before/after) → section_divider (solution) → icon_grid (approach/tools) → video (relevant tech demo) → full_bleed_image (process shot) → section_divider (results) → big_number (hero metric) → stats (supporting data, 3-4 items) → chart (trend/growth) → quote (client testimonial) → team (project team) → thank_you
+- For pitch decks (12-16 slides): cover → hero_impact (bold statement) → section_divider (problem) → big_number (market size/pain point) → comparison (current vs ideal) → section_divider (solution) → icon_grid (capabilities) → video (showreel or relevant demo) → text_image (how it works) → full_bleed_image (product shot) → section_divider (results) → stats (proof points) → chart (growth/traction) → team → quote (endorsement) → thank_you
+- For event recaps (10-14 slides): cover → hero_impact (event name) → full_bleed_image (hero shot) → video (event highlight reel) → big_number (attendance) → icon_grid (highlights) → image_gallery (moments) → stats (engagement metrics) → comparison (goals vs actual) → quote (attendee quote) → timeline (event journey) → thank_you
+- For proposals (12-16 slides): cover → hero_impact (vision statement) → section_divider (understanding) → text_image (client context) → comparison (challenge/opportunity) → section_divider (approach) → icon_grid (methodology) → video (relevant capability demo) → timeline (phases) → section_divider (investment) → table (pricing) → big_number (ROI) → team → thank_you
+- For reports (12-16 slides): cover → hero_impact (key finding) → big_number (headline metric) → section_divider (analysis) → chart (primary data) → stats (supporting metrics) → comparison (benchmark) → icon_grid (takeaways) → text_image (deep dive) → section_divider (next steps) → video (showreel) → content_list (action items) → thank_you
 
 Write all content in EDT's voice: direct, punchy, results-first. No buzzwords.
 Stats must use specific numbers (52,417 not "50k+"). Headlines must be SHORT — 2-5 words max.
@@ -133,6 +147,8 @@ Rules:
 - If the same layout type appears 3+ times, suggest replacing one with a different type that fits the content
 - Replace any single-stat "stats" slide with "big_number"
 - Replace any short-item "content_list" with "icon_grid" when items have labels under 6 words
+- If the deck has NO "video" slides, suggest adding one with action "add" — recommend the EDT Showreel 2025 (https://www.youtube.com/watch?v=0JIMyg78m4o) or a technology-relevant EDT video
+- If a "video" slide exists but has an empty video_url, suggest replacing it with a specific EDT video URL that matches the deck's topic
 - Output raw JSON array only.`;
 }
 
